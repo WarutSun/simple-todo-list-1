@@ -51,4 +51,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ghcr.io/warutsun/simple-todo-list-1:latest
+
