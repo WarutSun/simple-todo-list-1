@@ -8,6 +8,26 @@ const todoList = document.getElementById('todoList');
 const totalCount = document.getElementById('totalCount');
 const completedCount = document.getElementById('completedCount');
 
+const editButton = document.createElement('button');
+editButton.textContent = 'Edit';
+
+editButton.addEventListener('click', async () => {
+  const newText = prompt('Edit todo:', todo.text);
+
+  if (!newText) return;
+
+  const response = await fetch(`/api/todos/${todo.id}/edit`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: newText })
+  });
+
+  if (response.ok) {
+    loadTodos();
+  }
+});
+
+
 // State
 let todos = [];
 

@@ -154,6 +154,24 @@ describe('Todo API Endpoints', () => {
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('error', 'Todo not found');
     });
+    
+    test('should update todo text', async () => {
+  // CREATE ใหม่ก่อน
+  const createResponse = await request(app)
+    .post('/api/todos')
+    .send({ text: 'Old text' });
+
+  const todoId = createResponse.body.id;
+
+  // แล้วค่อย UPDATE
+  const editResponse = await request(app)
+    .put(`/api/todos/${todoId}`)
+    .send({ text: 'New text' });
+
+  expect(editResponse.status).toBe(200);
+  expect(editResponse.body.text).toBe('New text');
+});
+
   });
 
   describe('DELETE /api/todos/:id', () => {

@@ -9,6 +9,11 @@ const TODOS_FILE = path.join(__dirname, 'todos.json');
 
 app.use(express.json());
 app.use(express.static('public'));
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
 
 function readTodos() {
   try {
@@ -29,6 +34,10 @@ app.get('/api/todos', (req, res) => {
   res.json(todos);
 });
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
+});
+
 // POST create todo
 app.post('/api/todos', (req, res) => {
   const todos = readTodos();
@@ -39,12 +48,13 @@ app.post('/api/todos', (req, res) => {
   }
   
 
-  const newTodo = {
-    id: Date.now(),
-    text,
-    completed: false,
-    createdAt: new Date().toISOString()
-  };
+ const newTodo = {
+  id: Date.now() + Math.floor(Math.random() * 1000),
+  text,
+  completed: false,
+  createdAt: new Date().toISOString()
+};
+
 
   todos.push(newTodo);
   writeTodos(todos);
@@ -55,19 +65,36 @@ app.post('/api/todos', (req, res) => {
 // PUT toggle todo
 app.put('/api/todos/:id', (req, res) => {
   const todos = readTodos();
-  const id = parseInt(req.params.id, 10);
+  const id = Number(req.params.id);
 
-  const todo = todos.find(t => t.id === id);
+  const todo = todos.find(t => Number(t.id) === id);
+  
+
+  
 
   if (!todo) {
     return res.status(404).json({ error: 'Todo not found' });
   }
 
-  todo.completed = !todo.completed;
+  if (req.body && req.body.text !== undefined) {
+    const trimmed = req.body.text.trim();
+
+    if (!trimmed) {
+      return res.status(400).json({ error: 'Todo text is required' });
+    }
+
+    todo.text = trimmed;
+  } else {
+    todo.completed = !todo.completed;
+  }
+
   writeTodos(todos);
 
-  res.status(200).json(todo);
+  return res.status(200).json(todo);
 });
+
+
+
 
 // DELETE todo
 app.delete('/api/todos/:id', (req, res) => {
